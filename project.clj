@@ -1,5 +1,5 @@
 (def metrics-version "2.9.0")
-(defproject kixi/kixi.metrics "0.3.3-SNAPSHOT"
+(defproject kixi/kixi.metrics "0.3.3"
   :description "Provides mappers for jvm metrics to json and a Reporter for standard out"
   :url "http://github.com/MastodonC/kixi.metrics"
   :license {:name "Eclipse Public License"
