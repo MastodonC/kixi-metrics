@@ -101,7 +101,7 @@
 (defn registry->maps
   [registry]
   (map 
-   #(assoc % :log-type :metric)
+   #(assoc % :logtype :metric)
    (flatten
     (map
      (fn [[mapper getter]]
