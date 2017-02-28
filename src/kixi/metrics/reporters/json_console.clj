@@ -131,7 +131,7 @@
               (json/generate-stream
                metric
                *out*)
-              (prn *out*)))))))))
+              (prn)))))))))
 
 (defn start
   ([^ScheduledReporter reporter poll]
