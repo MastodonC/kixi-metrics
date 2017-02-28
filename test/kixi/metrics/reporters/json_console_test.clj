@@ -1,6 +1,6 @@
-(ns kixi.metrics-test
+(ns kixi.metrics.reporters.json-console-test
   (:require [clojure.test :refer :all]
-            [kixi.metrics :refer :all]
+            [kixi.metrics.reporters.json-console :refer :all]
             [metrics
              [core :as m :refer [default-registry]]
              [counters :as c]

@@ -1,4 +1,4 @@
-(ns kixi.metrics
+(ns kixi.metrics.reporters.json-console
   (:require [cheshire
              [core :as json]
              [factory :as factory]
@@ -139,3 +139,7 @@
   ([^ScheduledReporter reporter poll poll-unit]
    (.start reporter
            poll poll-unit)))
+
+(defn stop
+  [^ScheduledReporter reporter]
+  (.stop reporter))
