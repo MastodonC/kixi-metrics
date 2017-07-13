@@ -17,15 +17,11 @@
 
 (defn gauge->map
   [[gauge-name gauge]]
-  {:type :gauge
-   :name gauge-name
-   :value (g/value gauge)})
+  {gauge-name (g/value gauge)})
 
 (defn counter->map
   [[gauge-name gauge]]
-  {:type :counter
-   :name gauge-name
-   :value (c/value gauge)})
+  {gauge-name (c/value gauge)})
 
 (def sfirst (comp second first))
 
@@ -48,11 +44,12 @@
 
 (defn timer->map
   [[timer-name timer]]
-  (map
-   (fn [[n f]]
-     {:type :timer
-      :name (str timer-name "." n)
-      :value (f timer)})
+  (reduce
+   (fn [acc [n f]]
+     (assoc acc
+            (str timer-name "." n) 
+            (f timer)))
+   {}
    timer-fields))
 
 (def histo-fields
@@ -69,11 +66,12 @@
 
 (defn histo->map
   [[histo-name histo]]
-  (map
-   (fn [[n f]]
-     {:type :histogram
-      :name (str histo-name "." n)
-      :value (f histo)})
+  (reduce
+   (fn [acc [n f]]
+     (assoc acc
+            (str histo-name "." n)
+            (f histo)))
+   {}
    histo-fields))
 
 (def meter-fields
@@ -84,11 +82,12 @@
 
 (defn meter->map
   [[meter-name meter]]
-  (map
-   (fn [[n f]]
-     {:type :meter
-      :name (str meter-name "." n)
-      :value (f meter)})
+  (reduce
+   (fn [acc [n f]]
+     (assoc acc
+            (str meter-name "." n)
+            (f meter)))
+   {}
    meter-fields))
 
 (def mapper->metric-getter
@@ -98,15 +97,18 @@
    meter->map core/meters
    timer->map core/timers})
 
-(defn registry->maps
+(defn registry->map
   [registry]
-  (map 
-   #(assoc % :logtype :metric)
-   (flatten
-    (map
-     (fn [[mapper getter]]
-       (map mapper (getter registry)))
-     mapper->metric-getter))))
+  (assoc
+   (reduce
+    (fn [acc [mapper getter]]
+      (reduce
+       merge
+       acc
+       (map mapper (getter registry))))
+    {}
+    mapper->metric-getter)
+   :logtype :metric))
 
 (defn get-lock
   [^Writer writer]
@@ -126,7 +128,7 @@
      (proxy [ScheduledReporter] [registry name filter rate-unit duration-unit]
        (report
          ([]
-          (doseq [metric (registry->maps registry)]            
+          (let [metric (registry->map registry)]            
             (locking lock
               (json/generate-stream
                metric

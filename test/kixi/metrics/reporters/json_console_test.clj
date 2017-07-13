@@ -14,14 +14,14 @@
 (deftest instrument-jvm-check-metrics
   (let [reg (m/new-registry)
         _ (jvm/instrument-jvm reg)
-        metric-maps (registry->maps reg)]
-    (is (= (count (filter :log-type metric-maps))
-           (count metric-maps)))))
+        metric-map (registry->maps reg)]
+    (is (= (:logtype metric-map)
+           :metric))
+    (is (= (count (keys metric-map))
+           63))))
 
 (def zero-counter
-  {:type :counter
-   :name "default.default.a-counter"
-   :value 0})
+  {"default.default.a-counter" 0})
 
 (deftest map-counter->map
   (let [reg (m/new-registry)
@@ -31,9 +31,7 @@
            (first cs)))))
 
 (def zero-gauge
-  {:type :gauge
-   :name "default.default.a-gauge"
-   :value 10})
+  {"default.default.a-gauge" 10})
 
 (deftest map-gauge->map
   (let [reg (m/new-registry)
@@ -43,21 +41,21 @@
            (first gs)))))
 
 (def zero-timer
-  [{:type :timer, :name "default.default.a-timer.min", :value 0}
-   {:type :timer, :name "default.default.a-timer.p50", :value 0.0}
-   {:type :timer, :name "default.default.a-timer.p95", :value 0.0}
-   {:type :timer, :name "default.default.a-timer.mean", :value 0.0}
-   {:type :timer, :name "default.default.a-timer.p98", :value 0.0}
-   {:type :timer, :name "default.default.a-timer.count", :value 0}
-   {:type :timer, :name "default.default.a-timer.p99", :value 0.0}
-   {:type :timer, :name "default.default.a-timer.std-dev", :value 0.0}
-   {:type :timer, :name "default.default.a-timer.max", :value 0}
-   {:type :timer, :name "default.default.a-timer.p75", :value 0.0}
-   {:type :timer, :name "default.default.a-timer.p999", :value 0.0}
-   {:type :timer, :name "default.default.a-timer.m1_rate", :value 0.0}
-   {:type :timer, :name "default.default.a-timer.m5_rate", :value 0.0}
-   {:type :timer, :name "default.default.a-timer.m15_rate", :value 0.0}
-   {:type :timer, :name "default.default.a-timer.mean_rate", :value 0.0}])
+  {"default.default.a-timer.min" 0
+   "default.default.a-timer.p50" 0.0
+   "default.default.a-timer.p95" 0.0
+   "default.default.a-timer.mean" 0.0
+   "default.default.a-timer.p98" 0.0
+   "default.default.a-timer.count" 0
+   "default.default.a-timer.p99" 0.0
+   "default.default.a-timer.std-dev" 0.0
+   "default.default.a-timer.max" 0
+   "default.default.a-timer.p75" 0.0
+   "default.default.a-timer.p999" 0.0
+   "default.default.a-timer.m1_rate" 0.0
+   "default.default.a-timer.m5_rate" 0.0
+   "default.default.a-timer.m15_rate" 0.0
+   "default.default.a-timer.mean_rate" 0.0})
 
 (deftest map-timer->map
   (let [reg (m/new-registry)
@@ -67,36 +65,16 @@
            (set ts)))))
 
 (def zero-histo
-  [{:type :histogram,
-    :name "default.default.a-histogram.p999",
-    :value 0.0} 
-   {:type :histogram,
-    :name "default.default.a-histogram.p50",
-    :value 0.0}
-   {:type :histogram,
-    :name "default.default.a-histogram.p95",
-    :value 0.0}
-   {:type :histogram,
-    :name "default.default.a-histogram.count",
-    :value 0}
-   {:type :histogram,
-    :name "default.default.a-histogram.p75",
-    :value 0.0}
-   {:type :histogram,
-    :name "default.default.a-histogram.min",
-    :value 0}
-   {:type :histogram,
-    :name "default.default.a-histogram.mean",
-    :value 0.0}
-   {:type :histogram,
-    :name "default.default.a-histogram.p99",
-    :value 0.0}
-   {:type :histogram,
-    :name "default.default.a-histogram.max",
-    :value 0}
-   {:type :histogram,
-    :name "default.default.a-histogram.p98",
-    :value 0.0}])
+  {"default.default.a-histogram.p999" 0.0 
+   "default.default.a-histogram.p50" 0.0
+   "default.default.a-histogram.p95" 0.0
+   "default.default.a-histogram.count" 0
+   "default.default.a-histogram.p75" 0.0
+   "default.default.a-histogram.min" 0
+   "default.default.a-histogram.mean" 0.0
+   "default.default.a-histogram.p99" 0.0
+   "default.default.a-histogram.max" 0
+   "default.default.a-histogram.p98" 0.0})
 
 (deftest map-histo->map
   (let [reg (m/new-registry)
@@ -106,14 +84,10 @@
            (set hs)))))
 
 (def zero-meter
-  [{:type :meter, :name "default.default.a-meter.m1_rate", :value 0.0}
-   {:type :meter,
-    :name "default.default.a-meter.mean_rate",
-    :value 0.0}
-   {:type :meter, :name "default.default.a-meter.m5_rate", :value 0.0}
-   {:type :meter,
-    :name "default.default.a-meter.m15_rate",
-    :value 0.0}])
+  {"default.default.a-meter.m1_rate" 0.0
+   "default.default.a-meter.mean_rate" 0.0
+   "default.default.a-meter.m5_rate" 0.0
+   "default.default.a-meter.m15_rate" 0.0})
 
 (deftest map-meter->map
   (let [reg (m/new-registry)
@@ -130,11 +104,11 @@
         gauge (g/gauge-fn reg "a-gauge" (constantly 10))
         counter (c/counter reg "a-counter")
         all-metrcs (registry->maps reg)]
-    (is (= (set (map #(assoc % :log-type :metric)
-                     (flatten [zero-meter
-                               zero-histo
-                               zero-timer
-                               zero-counter
-                               zero-gauge])))
-           (set all-metrcs)))))
+    (is (= (assoc (apply merge [zero-meter
+                                zero-histo
+                                zero-timer
+                                zero-counter
+                                zero-gauge])
+                  :logtype :metric)
+           all-metrcs))))
 
